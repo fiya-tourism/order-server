@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fy.mapper.OrderMapper">
+  <resultMap id="BaseResultMap" type="com.fy.entity.Order">
+    <id column="order_id" jdbcType="BIGINT" property="orderId" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="order_total_prices" jdbcType="DOUBLE" property="orderTotalPrices" />
+    <result column="order_spots_status" jdbcType="INTEGER" property="orderSpotsStatus" />
+    <result column="order_trade_status" jdbcType="INTEGER" property="orderTradeStatus" />
+    <result column="order_address" jdbcType="VARCHAR" property="orderAddress" />
+    <result column="oreder_count" jdbcType="INTEGER" property="orederCount" />
+    <result column="order_remark" jdbcType="VARCHAR" property="orderRemark" />
+    <result column="order_create_date" jdbcType="TIMESTAMP" property="orderCreateDate" />
+    <result column="order_update" jdbcType="TIMESTAMP" property="orderUpdate" />
+    <result column="order_yh" jdbcType="INTEGER" property="orderYh" />
+    <result column="order_user_name" jdbcType="VARCHAR" property="orderUserName" />
+    <result column="order_user_phone" jdbcType="VARCHAR" property="orderUserPhone" />
+    <result column="order_pust" jdbcType="INTEGER" property="orderPust" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    order_id, user_id, order_total_prices, order_spots_status, order_trade_status, order_address,
+    oreder_count, order_remark, order_create_date, order_update, order_yh, order_user_name,
+    order_user_phone, order_pust
+  </sql>
+  <select id="select" parameterType="com.fy.utils.PageUtils" resultType="com.fy.entity.Order">
+          SELECT * FROM
+      fy_order fy_or INNER JOIN fy_order_child fy_or_ch
+      on fy_or.order_id = fy_or_ch.order_id_pk
+      WHERE order_yh =0 AND order_spots_status is not null
+          <if test="orderConId!=null and orderConId!=''">
+              AND order_conid like "%"#{orderConId}"%"
+          </if>
+  </select>
+  <update id="deleteOrder" parameterType="java.lang.String">
+    UPDATE fy_order set order_yh =1 WHERE order_conid = #{conid}
+  </update>
+
+
+    <insert id="addSpots">
+    INSERT INTO
+      fy_order(
+      user_id,
+      order_conid,
+      order_total_prices,
+      order_spots_status,
+      oreder_count,
+      order_remark,
+      order_create_date,
+      order_user_name,
+      order_user_phone,
+      order_yh
+      )
+      VALUES (
+      #{user.userId},
+      #{order.orderConId},
+      #{order.orderTotalPrices},
+      #{order.orderSpotsStatus},
+      #{order.orederCount},
+      #{order.orderRemark},
+      now(),
+      #{user.userName},
+      #{user.userPhone},
+      0
+      )
+  </insert>
+    <select id="selectByOrderConId" parameterType="com.fy.entity.Order" resultType="com.fy.entity.Order">
+    select * from fy_order WHERE order_conid =#{orderConId};
+  </select>
+    <insert id="addChildSpots">
+      INSERT INTO
+      fy_order_child(
+      order_id_pk,
+      spots_id,
+      order_child_trade_name,
+      order_child_price,
+      create_child_date,
+      order_child_shop
+      )
+      VALUES (
+      #{order.orderId},
+      #{spots.spotsId},
+      #{spots.spotsName},
+      #{spots.spotsPrice},
+      now(),
+      now()
+      )
+  </insert>
+    <insert id="addItem">
+       INSERT INTO
+      fy_order(
+      user_id,
+      order_conid,
+      order_total_prices,
+      order_trade_status,
+      oreder_count,
+      order_remark,
+      order_create_date,
+      order_user_name,
+      order_user_phone,
+      order_address,
+      order_yh
+      )
+      VALUES (
+      #{user.userId},
+      #{order.orderConId},
+      #{order.orderTotalPrices},
+      #{order.orderTradeStatus},
+      #{order.orederCount},
+      #{order.orderRemark},
+      now(),
+      #{site.siteName},
+      #{site.sitePhone},
+      #{site.siteParticular},
+      0
+      )
+    </insert>
+
+    <insert id="addChildItem">
+        INSERT INTO
+        fy_order_child(
+        order_id_pk,
+        item_id,
+        order_child_trade_name,
+        order_child_price,
+        create_child_date,
+        order_child_shop,
+        order_child_item_type,
+        order_child_item_address,
+        order_child_item_attrkey,
+        order_child_item_attrvalue
+        )
+        VALUES (
+        #{order.orderId},
+        #{itemSpu.itemId},
+        #{itemSpu.itemName},
+        #{itemSku.iskuSalePrice},
+        now(),
+        now(),
+        #{itemSpu.itemType},
+        #{itemSpu.itemAddress},
+        #{itemAttr.attrAttrKey},
+        #{itemAttr.attrAttrValue}
+        )
+    </insert>
+    <select id="selectItemList" parameterType="com.fy.utils.PageUtils" resultType="com.fy.entity.Order">
+        SELECT * FROM
+      fy_order fy_or INNER JOIN fy_order_child fy_or_ch
+      on fy_or.order_id = fy_or_ch.order_id_pk WHERE order_yh =0 AND order_trade_status is not null
+        <if test="orderConId !=null and orderConId!=''">
+            AND order_conid like "%"#{orderConId}"%"
+        </if>
+    </select>
+
+    <update id="deleteItemOrder" parameterType="java.lang.String">
+        UPDATE fy_order set order_yh =1 WHERE order_conid = #{conid}
+    </update>
+</mapper>
