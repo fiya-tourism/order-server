@@ -8,7 +8,7 @@ public class ItemAttr {
     private Integer iskuId;
     //商品规格属性名
     private String attrAttrKey;
-    //商品规格属性值
+    //商品规格属性值2
     private String attrAttrValue;
 
     public ItemAttr() {
